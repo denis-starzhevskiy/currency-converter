@@ -16,6 +16,7 @@ import {
   getFormattedPrice,
 } from '../helpers/converterUtils'
 import { makeStyles } from '@material-ui/styles'
+import useCurrencies from '../context/useCurrencies'
 
 const useStyles = makeStyles(() => ({
   boxContainer: {
@@ -38,49 +39,39 @@ const useStyles = makeStyles(() => ({
 
 const ConverterPage = () => {
   const classes = useStyles()
-  const [currencyValues, setCurrencyValues] = useState(null)
+  const { isInitialized, currencies } = useCurrencies()
   const [currenciesNames, setCurrenciesNames] = useState([])
-  const mdUp = useMediaQuery('(min-width: 900px)')
   const [firstCurrency, setFirstCurrency] = useState(0)
   const [firstCurrencyName, setFirstCurrencyName] = useState('UAH')
   const [secondCurrency, setSecondCurrency] = useState(0)
   const [secondCurrencyName, setSecondCurrencyName] = useState('USD')
-  const [isCalculating, setIsCalculating] = useState(false)
+  const mdUp = useMediaQuery('(min-width: 900px)')
 
   const onChangeFirstCurrency = value => {
     setFirstCurrency(value)
-
-    if (!isCalculating) {
-      setIsCalculating(true)
-      setSecondCurrency(
-        getFormattedPrice(
-          getCurrencyPriceRelatedToAnotherCurrency(
-            secondCurrencyName,
-            firstCurrencyName,
-            currencyValues
-          ) * value
-        )
+    setSecondCurrency(
+      getFormattedPrice(
+        getCurrencyPriceRelatedToAnotherCurrency(
+          firstCurrencyName,
+          secondCurrencyName,
+          currencies
+        ) * value
       )
-      setIsCalculating(false)
-    }
+    )
   }
 
   const onChangeSecondCurrency = value => {
     setSecondCurrency(value)
 
-    if (!isCalculating) {
-      setIsCalculating(true)
-      setFirstCurrency(
-        getFormattedPrice(
-          getCurrencyPriceRelatedToAnotherCurrency(
-            secondCurrencyName,
-            firstCurrencyName,
-            currencyValues
-          ) * value
-        )
+    setFirstCurrency(
+      getFormattedPrice(
+        getCurrencyPriceRelatedToAnotherCurrency(
+          secondCurrencyName,
+          firstCurrencyName,
+          currencies
+        ) * value
       )
-      setIsCalculating(false)
-    }
+    )
   }
 
   const selectFirstCurrency = e => {
@@ -88,11 +79,8 @@ const ConverterPage = () => {
 
     setSecondCurrency(
       getFormattedPrice(
-        getCurrencyPriceRelatedToAnotherCurrency(
-          selectedCurrency,
-          secondCurrencyName,
-          currencyValues
-        ) * firstCurrency
+        getCurrencyPriceRelatedToAnotherCurrency(selectedCurrency, secondCurrencyName, currencies) *
+          firstCurrency
       )
     )
     setFirstCurrencyName(selectedCurrency)
@@ -102,31 +90,23 @@ const ConverterPage = () => {
     const selectedCurrency = e.target.value
     setFirstCurrency(
       getFormattedPrice(
-        getCurrencyPriceRelatedToAnotherCurrency(
-          firstCurrencyName,
-          selectedCurrency,
-          currencyValues
-        ) * secondCurrency
+        getCurrencyPriceRelatedToAnotherCurrency(firstCurrencyName, selectedCurrency, currencies) *
+          secondCurrency
       )
     )
     setSecondCurrencyName(selectedCurrency)
   }
+
   useEffect(() => {
-    getCurrencyValues()
-      .then(result => {
-        setCurrencyValues(result.data)
-
-        let currenciesValues = []
-        Object.keys(result.data).map(item => {
-          currenciesValues.push(item)
-        })
-
-        setCurrenciesNames(currenciesValues)
+    if (isInitialized) {
+      let currenciesValues = []
+      Object.keys(currencies).map(item => {
+        currenciesValues.push(item)
       })
-      .catch(() => {
-        setCurrencyValues([])
-      })
-  }, [])
+
+      setCurrenciesNames(currenciesValues)
+    }
+  }, [isInitialized])
 
   const restoreInputData = () => {
     setFirstCurrencyName('UAH')
@@ -137,7 +117,7 @@ const ConverterPage = () => {
 
   return (
     <>
-      {currencyValues && (
+      {isInitialized && (
         <Container maxWidth={'md'}>
           <Box mt={10} py={8} className={classes.boxContainer}>
             <Typography align={'center'} variant={'h4'}>
