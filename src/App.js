@@ -1,25 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react'
+import './App.css'
+import MainLayout from './pages/layout/MainLayout'
+import ConverterPage from './pages/ConverterPage'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import useCurrencies from './context/useCurrencies'
 
 function App() {
+  const { loadData } = useCurrencies()
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <BrowserRouter>
+      <Switch>
+        <MainLayout>
+          <Route path={'/'} render={() => <ConverterPage />} />
+        </MainLayout>
+      </Switch>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
