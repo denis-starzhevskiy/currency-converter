@@ -7,11 +7,7 @@ export const getCurrencyPriceRelatedToAnotherCurrency = (
 }
 
 export const getFormattedPrice = price => {
-  let formattedPrice = price.toString()
-  if (formattedPrice.includes('.') && !formattedPrice.includes('e')) {
-    formattedPrice = formattedPrice.split('.')[0] + '.' + formattedPrice.split('.')[1].slice(0, 2)
-  }
-  return Number(formattedPrice)
+  return parseFloat(price.toFixed(2))
 }
 
 export const checkValidatePrice = price => {
